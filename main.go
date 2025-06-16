@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
+	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/chromedp/chromedp"
@@ -25,16 +27,31 @@ func Handler(_ context.Context, _ any) error {
 	ctx, cancel := chromedp.NewContext(cctx, chromedp.WithDebugf(log.Printf))
 	defer cancel()
 
-	url := "https://google.com"
+	url := "https://x.com/tweet/status/1934128117171601448"
 	err := chromedp.Run(ctx, chromedp.Navigate(url))
 	if err != nil {
-		log.Println("error navigating to website")
+		log.Printf("error navigating to website: %v", err)
 		return fmt.Errorf("error navigating to website '%s': %v", url, err)
 	}
+
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Printf("error making http request: %v", err)
+		return err
+	}
+	defer resp.Body.Close()
+	fmt.Println("\n", resp)
 
 	return nil
 }
 
 func main() {
-	lambda.Start(Handler)
+	if _, exists := os.LookupEnv("AWS_LAMBDA_RUNTIME_API"); exists {
+		lambda.Start(Handler)
+	} else {
+		err := Handler(context.Background(), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
