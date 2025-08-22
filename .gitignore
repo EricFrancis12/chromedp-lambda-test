@@ -1,0 +1,13 @@
+# bin
+/bin
+/application
+/bootstrap
+/chromium
+**/*chromedp-lambda-test
+**/*.exe
+**/*.msi
+**/*.br
+
+# misc
+/.serverless
+/notes.txt

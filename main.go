@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/chromedp/chromedp"
@@ -13,6 +14,7 @@ import (
 
 func Handler(_ context.Context, _ any) error {
 	opts := []chromedp.ExecAllocatorOption{
+		// chromedp.ExecPath(), // TODO: ...
 		chromedp.NoSandbox,
 		chromedp.Flag("disable-setuid-sandbox", true),
 		chromedp.Flag("disable-dev-shm-usage", true),
@@ -24,7 +26,7 @@ func Handler(_ context.Context, _ any) error {
 	cctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancel()
 
-	ctx, cancel := chromedp.NewContext(cctx, chromedp.WithDebugf(log.Printf))
+	ctx, cancel := chromedp.NewContext(cctx /* chromedp.WithDebugf(log.Printf) */)
 	defer cancel()
 
 	url := "https://x.com/tweet/status/1934128117171601448"
@@ -40,7 +42,7 @@ func Handler(_ context.Context, _ any) error {
 		return err
 	}
 	defer resp.Body.Close()
-	fmt.Println("\n", resp)
+	fmt.Printf("\nStatusCode: %d\n", resp.StatusCode)
 
 	return nil
 }
@@ -50,6 +52,9 @@ func main() {
 		lambda.Start(Handler)
 	} else {
 		err := Handler(context.Background(), nil)
+
+		time.Sleep(time.Hour * 20) // TODO: remove
+
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,0 +1,18 @@
+service: chromedp-lambda-test
+frameworkVersion: ">=4.4.0"
+provider:
+  name: aws
+  runtime: provided.al2
+  region: us-east-1
+  stage: ${opt:stage}
+functions:
+  api:
+    handler: bootstrap
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
+package:
+  patterns:
+    - "!*/**"
+    - bootstrap
